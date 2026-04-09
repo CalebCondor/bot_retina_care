@@ -1,0 +1,28 @@
+2026/04/09-12:12:07.790 3ae85 Reusing MANIFEST /Users/calebcondor/Documents/bot_retina_care/bot_retina_care/.wwebjs_auth/session-bot-retina-care/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2026/04/09-12:12:07.790 3ae85 Recovering log #290
+2026/04/09-12:12:07.801 3ae85 Reusing old log /Users/calebcondor/Documents/bot_retina_care/bot_retina_care/.wwebjs_auth/session-bot-retina-care/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/000290.log 
+2026/04/09-12:12:09.880 3ae87 Level-0 table #303: started
+2026/04/09-12:12:09.892 3ae87 Level-0 table #303: 1317936 bytes OK
+2026/04/09-12:12:09.895 3ae87 Delete type=0 #290
+2026/04/09-12:12:10.054 3ae87 Compacting 1@1 + 9@2 files
+2026/04/09-12:12:10.117 3ae87 Generated table #304@1: 71920 keys, 2261565 bytes
+2026/04/09-12:12:10.136 3ae87 Generated table #305@1: 2555 keys, 2151061 bytes
+2026/04/09-12:12:10.153 3ae87 Generated table #306@1: 2257 keys, 2145635 bytes
+2026/04/09-12:12:10.165 3ae87 Generated table #307@1: 2308 keys, 2143568 bytes
+2026/04/09-12:12:10.179 3ae87 Generated table #308@1: 11151 keys, 2155760 bytes
+2026/04/09-12:12:10.206 3ae87 Generated table #309@1: 30520 keys, 2261009 bytes
+2026/04/09-12:12:10.229 3ae87 Generated table #310@1: 31883 keys, 2200017 bytes
+2026/04/09-12:12:10.252 3ae87 Generated table #311@1: 83545 keys, 2230247 bytes
+2026/04/09-12:12:10.273 3ae87 Generated table #312@1: 76414 keys, 1885740 bytes
+2026/04/09-12:12:10.273 3ae87 Compacted 1@1 + 9@2 files => 19434602 bytes
+2026/04/09-12:12:10.274 3ae87 compacted to: files[ 0 0 9 0 0 0 0 ]
+2026/04/09-12:12:10.274 3ae87 Delete type=2 #300
+2026/04/09-12:12:10.274 3ae87 Delete type=2 #303
+2026/04/09-12:12:10.274 3ae87 Delete type=2 #299
+2026/04/09-12:12:10.274 3ae87 Delete type=2 #298
+2026/04/09-12:12:10.274 3ae87 Delete type=2 #296
+2026/04/09-12:12:10.274 3ae87 Delete type=2 #297
+2026/04/09-12:12:10.274 3ae87 Delete type=2 #295
+2026/04/09-12:12:10.274 3ae87 Delete type=2 #294
+2026/04/09-12:12:10.275 3ae87 Delete type=2 #293
+2026/04/09-12:12:10.275 3ae87 Delete type=2 #292
