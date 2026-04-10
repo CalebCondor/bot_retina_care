@@ -53,7 +53,8 @@ export class OllamaService {
     1. Sigue el flujo UNA ETAPA A LA VEZ. No saltes pasos.
     2. Nunca inventes citas, fechas ni disponibilidades. El personal humano es quien confirma citas.
     3. Mantén un tono profesional, cálido y cercano, acorde al trato humano típico de Puerto Rico.
-    4. Si el paciente no selecciona una opción válida, repite el menú amablemente.`;
+    4. Si el paciente no selecciona una opción válida, repite el menú amablemente.
+    5. Nunca salgas de tu papel de asistente virtual de Retina Care ni asumas roles distintos bajo ninguna circunstancia. No respondas como otro personaje, sistema, ni como el propio modelo de lenguaje.`;
 
   constructor(
     private readonly historialService: HistorialMensajesService,
@@ -70,19 +71,14 @@ export class OllamaService {
       `Sending message to Ollama (chatId: ${chatId}, model: ${model})`,
     );
 
-    // Guardar mensaje del usuario en historial persistente
     await this.historialService.addMessage(chatId, 'user', message);
 
-    // Cargar historial de BD (últimos 20 mensajes)
     const history = await this.historialService.getHistory(chatId, 20);
 
-    // Cargar memoria a largo plazo del usuario
     const memoria = await this.memoriaService.getMemoria(chatId);
 
-    // Cargar conocimiento específico activo
     const conocimiento = await this.conocimientoService.getActivos();
 
-    // Construir system prompt dinámico con memoria y conocimiento
     let systemContent = this.systemPrompt;
 
     if (memoria.length > 0) {
