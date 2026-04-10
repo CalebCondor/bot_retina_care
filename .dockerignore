@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.wwebjs_auth/
+.wwebjs_cache/
+*.log
+npm-debug.log*
+.env
+.env.local
+coverage/
+.nyc_output/
+.git/
+.gitignore
+README.md
+test/

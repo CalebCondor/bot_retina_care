@@ -1,0 +1,23 @@
+services:
+  # ── Aplicación NestJS ────────────────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      target: production
+    ports:
+      - "${PORT:-3000}:3000"
+    env_file:
+      - .env
+    environment:
+      # Ollama corre en el Mac Mini host — host.docker.internal lo resuelve
+      # tanto en Docker Desktop (Mac/Win) como en Docker Engine Linux.
+      OLLAMA_URL: http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      # Persistir sesión de WhatsApp para no re-escanear el QR en cada reinicio
+      - whatsapp_session:/app/.wwebjs_auth
+    restart: unless-stopped
+
+volumes:
+  whatsapp_session:

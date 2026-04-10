@@ -6,7 +6,7 @@ import { ConocimientoEspecificoService } from '../database/conocimiento-especifi
 @Injectable()
 export class OllamaService {
   private readonly logger = new Logger(OllamaService.name);
-  private readonly baseUrl = 'http://localhost:11434';
+  private readonly baseUrl = process.env.OLLAMA_URL ?? 'http://localhost:11434';
   private readonly defaultModel = 'gemma3:4b';
   private readonly systemPrompt = `Eres el asistente virtual de Retina Care, una clínica oftalmológica especializada en retina ubicada en Puerto Rico. Tu función es atender a los pacientes siguiendo un flujo de conversación estructurado.
 
