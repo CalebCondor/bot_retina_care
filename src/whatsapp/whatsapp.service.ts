@@ -6,7 +6,6 @@ import { OllamaService } from '../ollama/ollama.service';
 @Injectable()
 export class WhatsappService implements OnModuleInit {
   private readonly logger = new Logger(WhatsappService.name);
-  private readonly allowedNumber = '51963311714@c.us';
   private client!: Client;
 
   constructor(private readonly ollamaService: OllamaService) {}
@@ -48,14 +47,29 @@ export class WhatsappService implements OnModuleInit {
       const incoming = message.body.trim();
       if (!incoming) return;
 
-      // Solo responder al número autorizado
-      if (message.from !== this.allowedNumber) return;
-
       this.logger.log(`Mensaje recibido de ${message.from}: "${incoming}"`);
 
       try {
         // Pasar el message.from para identificar el hilo de conversación
         const reply = await this.ollamaService.chat(incoming, message.from);
+        if (!reply || !reply.trim()) {
+          this.logger.warn(
+            `Respuesta vacía de Ollama para ${message.from}, reintentando...`,
+          );
+          const retryReply = await this.ollamaService.chat(
+            incoming,
+            message.from,
+          );
+          if (!retryReply || !retryReply.trim()) {
+            await message.reply(
+              'Disculpe, no pude procesar su mensaje en este momento. Por favor intente de nuevo.',
+            );
+            return;
+          }
+          await message.reply(retryReply);
+          this.logger.log(`Respuesta enviada a ${message.from} (reintento)`);
+          return;
+        }
         await message.reply(reply);
         this.logger.log(`Respuesta enviada a ${message.from}`);
       } catch (error) {

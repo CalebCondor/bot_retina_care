@@ -20,7 +20,11 @@ export class OllamaController {
   @Post('chat')
   @HttpCode(HttpStatus.OK)
   async chat(@Body() dto: ChatDto): Promise<{ reply: string }> {
-    const reply = await this.ollamaService.chat(dto.message, dto.chatId ?? 'web-test', dto.model);
+    const reply = await this.ollamaService.chat(
+      dto.message,
+      dto.chatId ?? 'web-test',
+      dto.model,
+    );
     return { reply };
   }
 
