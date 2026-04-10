@@ -6,6 +6,7 @@ import { OllamaService } from '../ollama/ollama.service';
 @Injectable()
 export class WhatsappService implements OnModuleInit {
   private readonly logger = new Logger(WhatsappService.name);
+  private readonly allowedNumber = '51963311714@c.us';
   private client!: Client;
 
   constructor(private readonly ollamaService: OllamaService) {}
@@ -46,6 +47,9 @@ export class WhatsappService implements OnModuleInit {
 
       const incoming = message.body.trim();
       if (!incoming) return;
+
+      // Solo responder al número autorizado
+      if (message.from !== this.allowedNumber) return;
 
       this.logger.log(`Mensaje recibido de ${message.from}: "${incoming}"`);
 
