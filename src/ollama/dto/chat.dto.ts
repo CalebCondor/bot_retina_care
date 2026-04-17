@@ -1,5 +1,5 @@
 export class ChatDto {
-  message: string;
+  message!: string;
   chatId?: string;
   model?: string;
 }

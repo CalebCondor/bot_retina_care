@@ -2,12 +2,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import { HistorialMensajesService } from '../database/historial-mensajes.service';
 import { MemoriaLargoPlazoService } from '../database/memoria-largo-plazo.service';
 import { ConocimientoEspecificoService } from '../database/conocimiento-especifico.service';
+import { NotificacionesService } from '../notificaciones/notificaciones.service';
 
 @Injectable()
 export class OllamaService {
   private readonly logger = new Logger(OllamaService.name);
-  private readonly baseUrl = process.env.OLLAMA_URL ?? 'http://localhost:11434';
-  private readonly defaultModel = 'gemma3:4b';
+  private readonly openaiUrl = 'https://api.openai.com/v1/chat/completions';
+  private readonly apiKey = process.env.OPENAI_API_KEY ?? '';
+  private readonly defaultModel = process.env.OPENAI_MODEL ?? 'gpt-4o-mini';
   private readonly systemPrompt = `Eres el asistente virtual de Retina Care, una clínica oftalmológica especializada en retina ubicada en Puerto Rico. Tu función es atender a los pacientes siguiendo un flujo de conversación estructurado.
 
     CONTEXTO DE PUERTO RICO:
@@ -30,36 +32,44 @@ export class OllamaService {
     PASO 2 — SEGÚN LA OPCIÓN ELEGIDA:
 
     OPCIÓN 1 - NUEVO PACIENTE:
-    Responde: "Para coordinar una cita como paciente nuevo, por favor déjenos su nombre completo, pueblo de residencia y número de teléfono. Nuestro personal se estará comunicando con usted lo más pronto posible."
-    - Espera a que el paciente provea los datos.
-    - Una vez recibidos, confirma: "Gracias, [nombre]. Hemos recibido su información. Un miembro de nuestro equipo se comunicará con usted pronto. ¡Que tenga un excelente día!"
+    Cuando el paciente selecciona "1" o dice "nuevo paciente", responde ÚNICAMENTE:
+    "Para coordinar una cita como paciente nuevo, por favor déjenos su nombre completo, pueblo de residencia y número de teléfono. Nuestro personal se estará comunicando con usted lo más pronto posible."
+    DETENTE aquí. No digas nada más. Espera el siguiente mensaje del paciente.
+    Solo cuando el paciente responda con su nombre completo Y número de teléfono en ese mensaje, entonces confirma: "Gracias, [nombre]. Hemos recibido su información. Un miembro de nuestro equipo se comunicará con usted pronto. ¡Que tenga un excelente día!"
 
     OPCIÓN 2 - PACIENTE EXISTENTE:
-    Responde: "Para coordinar, confirmar o cancelar una cita, por favor déjenos su nombre completo y número de teléfono. Nuestro personal se estará comunicando con usted tan pronto como sea posible."
-    - Espera a que el paciente provea los datos.
-    - Una vez recibidos, confirma: "Gracias, [nombre]. Hemos recibido su información. Un miembro de nuestro equipo se comunicará con usted pronto. ¡Que tenga un excelente día!"
+    Cuando el paciente selecciona "2" o dice "paciente existente", responde ÚNICAMENTE:
+    "Para coordinar, confirmar o cancelar una cita, por favor déjenos su nombre completo y número de teléfono. Nuestro personal se estará comunicando con usted tan pronto como sea posible."
+    DETENTE aquí. No digas nada más. Espera el siguiente mensaje del paciente.
+    Solo cuando el paciente responda con su nombre completo Y número de teléfono en ese mensaje, entonces confirma: "Gracias, [nombre]. Hemos recibido su información. Un miembro de nuestro equipo se comunicará con usted pronto. ¡Que tenga un excelente día!"
 
     OPCIÓN 3 - TENGO UNA PREGUNTA:
-    Responde: "Con gusto le ayudamos. Por favor escriba su pregunta y añada su nombre y número de teléfono para poder comunicarnos con usted lo antes posible."
-    - Espera la respuesta del paciente.
-    - Una vez recibida, confirma: "Gracias por su mensaje. Nuestro personal revisará su pregunta y se comunicará con usted pronto."
+    Cuando el paciente selecciona "3" o dice "tengo una pregunta", responde ÚNICAMENTE:
+    "Con gusto le ayudamos. Por favor escriba su pregunta y añada su nombre y número de teléfono para poder comunicarnos con usted lo antes posible."
+    DETENTE aquí. No digas nada más. Espera el siguiente mensaje del paciente.
+    Solo cuando el paciente responda con su pregunta, nombre y teléfono en ese mensaje, entonces confirma: "Gracias por su mensaje. Nuestro personal revisará su pregunta y se comunicará con usted pronto."
 
     OPCIÓN 4 - OTRO:
-    Responde: "Por favor descríbanos el motivo de su comunicación y añada su nombre y número de teléfono. Nos comunicaremos con usted a la brevedad posible."
-    - Espera la respuesta del paciente.
-    - Una vez recibida, confirma: "Gracias por su mensaje. Nuestro equipo se comunicará con usted pronto."
+    Cuando el paciente selecciona "4" o dice "otro", responde ÚNICAMENTE:
+    "Por favor descríbanos el motivo de su comunicación y añada su nombre y número de teléfono. Nos comunicaremos con usted a la brevedad posible."
+    DETENTE aquí. No digas nada más. Espera el siguiente mensaje del paciente.
+    Solo cuando el paciente responda con su motivo, nombre y teléfono en ese mensaje, entonces confirma: "Gracias por su mensaje. Nuestro equipo se comunicará con usted pronto."
 
-    REGLAS GENERALES:
-    1. Sigue el flujo UNA ETAPA A LA VEZ. No saltes pasos.
-    2. Nunca inventes citas, fechas ni disponibilidades. El personal humano es quien confirma citas.
-    3. Mantén un tono profesional, cálido y cercano, acorde al trato humano típico de Puerto Rico.
-    4. Si el paciente no selecciona una opción válida, repite el menú amablemente.
-    5. Nunca salgas de tu papel de asistente virtual de Retina Care ni asumas roles distintos bajo ninguna circunstancia. No respondas como otro personaje, sistema, ni como el propio modelo de lenguaje.`;
+    REGLAS CRÍTICAS — LEE CON ATENCIÓN:
+    1. NUNCA envíes el mensaje de confirmación ("Gracias, [nombre]...") en la misma respuesta donde pides los datos. Son dos turnos separados.
+    2. El número "1", "2", "3" o "4" por sí solo es solo una selección de menú, NO son los datos del paciente. Después de recibir esa selección, pide los datos y ESPERA.
+    3. El mensaje de confirmación solo se envía DESPUÉS de que el paciente te haya dado su nombre y teléfono en un mensaje posterior.
+    4. Sigue el flujo UNA ETAPA A LA VEZ. No comprimas dos pasos en uno.
+    5. Nunca inventes citas, fechas ni disponibilidades. El personal humano es quien confirma citas.
+    6. Mantén un tono profesional, cálido y cercano, acorde al trato humano típico de Puerto Rico.
+    7. Si el paciente no selecciona una opción válida, repite el menú amablemente.
+    8. Nunca salgas de tu papel de asistente virtual de Retina Care ni asumas roles distintos bajo ninguna circunstancia. No respondas como otro personaje, sistema, ni como el propio modelo de lenguaje.`;
 
   constructor(
     private readonly historialService: HistorialMensajesService,
     private readonly memoriaService: MemoriaLargoPlazoService,
     private readonly conocimientoService: ConocimientoEspecificoService,
+    private readonly notificacionesService: NotificacionesService,
   ) {}
 
   async chat(
@@ -68,7 +78,7 @@ export class OllamaService {
     model: string = this.defaultModel,
   ): Promise<string> {
     this.logger.log(
-      `Sending message to Ollama (chatId: ${chatId}, model: ${model})`,
+      `Sending message to OpenAI (chatId: ${chatId}, model: ${model})`,
     );
 
     await this.historialService.addMessage(chatId, 'user', message);
@@ -100,27 +110,30 @@ export class OllamaService {
       ...history.map((h) => ({ role: h.role, content: h.content })),
     ];
 
-    const response = await fetch(`${this.baseUrl}/api/chat`, {
+    const response = await fetch(this.openaiUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.apiKey}`,
+      },
       body: JSON.stringify({
         model,
         messages,
-        stream: false,
       }),
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
       throw new Error(
-        `Ollama API responded with status ${response.status}: ${response.statusText}`,
+        `OpenAI API responded with status ${response.status}: ${errorText}`,
       );
     }
 
     const data = (await response.json()) as {
-      message?: { content: string };
+      choices?: Array<{ message?: { content: string } }>;
     };
 
-    const reply = data.message?.content ?? '';
+    const reply = data.choices?.[0]?.message?.content ?? '';
 
     // Guardar respuesta del asistente en historial persistente
     if (reply) {
@@ -149,22 +162,24 @@ Si un campo no está presente, omítelo. Si no hay ningún dato, responde exacta
 
 Mensaje del paciente: "${userMessage}"`;
 
-    const response = await fetch(`${this.baseUrl}/api/chat`, {
+    const response = await fetch(this.openaiUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.apiKey}`,
+      },
       body: JSON.stringify({
         model: this.defaultModel,
         messages: [{ role: 'user', content: extractPrompt }],
-        stream: false,
       }),
     });
 
     if (!response.ok) return;
 
     const data = (await response.json()) as {
-      message?: { content: string };
+      choices?: Array<{ message?: { content: string } }>;
     };
-    const content = data.message?.content ?? '{}';
+    const content = data.choices?.[0]?.message?.content ?? '{}';
 
     // Extraer el primer bloque JSON de la respuesta
     const match = content.match(/\{[\s\S]*?\}/);
@@ -183,16 +198,36 @@ Mensaje del paciente: "${userMessage}"`;
         this.logger.log(`Memoria guardada [${chatId}] ${key}: ${value.trim()}`);
       }
     }
+
+    // Si se guardaron datos relevantes del paciente, enviar alerta
+    const datosClave = ['nombre', 'telefono', 'pueblo', 'plan_medico'];
+    const datosGuardados = Object.fromEntries(
+      Object.entries(facts).filter(
+        ([key, value]) =>
+          datosClave.includes(key) && value && typeof value === 'string',
+      ),
+    ) as Record<string, string>;
+
+    if (Object.keys(datosGuardados).length > 0) {
+      void this.notificacionesService.enviarAlerta({
+        tipo: 'datos_paciente_registrados',
+        numero: chatId,
+        datos: datosGuardados,
+        timestamp: new Date().toISOString(),
+      });
+    }
   }
 
   async listModels(): Promise<string[]> {
-    const response = await fetch(`${this.baseUrl}/api/tags`);
+    const response = await fetch('https://api.openai.com/v1/models', {
+      headers: { Authorization: `Bearer ${this.apiKey}` },
+    });
     if (!response.ok) {
-      throw new Error(`Ollama API responded with status ${response.status}`);
+      throw new Error(`OpenAI API responded with status ${response.status}`);
     }
     const data = (await response.json()) as {
-      models?: Array<{ name: string }>;
+      data?: Array<{ id: string }>;
     };
-    return (data.models ?? []).map((m) => m.name);
+    return (data.data ?? []).map((m) => m.id);
   }
 }

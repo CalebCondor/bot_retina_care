@@ -1,0 +1,17 @@
+// Desde un frontend / panel de admin
+const source = new EventSource('http://localhost:3000/notificaciones/stream');
+
+source.addEventListener('mensaje_entrante', (e) => {
+  const data = JSON.parse(e.data);
+  console.log(`Nuevo mensaje de ${data.numero}: "${data.mensaje}"`);
+});
+
+source.addEventListener('datos_paciente_registrados', (e) => {
+  const data = JSON.parse(e.data);
+  console.log(`Datos registrados de ${data.numero}:`, data.datos);
+});
+
+source.addEventListener('respuesta_enviada', (e) => {
+  const data = JSON.parse(e.data);
+  console.log(`Respuesta enviada a ${data.numero}`);
+});

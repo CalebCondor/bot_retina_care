@@ -23,4 +23,14 @@ export class MemoriaLargoPlazoService {
       await this.repo.save(this.repo.create({ chatId, clave, valor }));
     }
   }
+
+  async getAllPacientes(): Promise<Record<string, Record<string, string>>> {
+    const rows = await this.repo.find({ order: { chatId: 'ASC' } });
+    const result: Record<string, Record<string, string>> = {};
+    for (const row of rows) {
+      if (!result[row.chatId]) result[row.chatId] = {};
+      result[row.chatId][row.clave] = row.valor;
+    }
+    return result;
+  }
 }
